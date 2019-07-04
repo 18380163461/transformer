@@ -140,13 +140,13 @@ public class TransformerVoUtils {
                 declaredField.setAccessible(true);
                 try {
                     Object value = declaredField.get(valueObj);
-                    StringBuilder fieldName = new StringBuilder(declaredField.getName());
-                    fieldName = fieldName.append(dateConversion.fieldName());
+                    String fieldName = declaredField.getName();
+                    String fieldNameDesc = fieldName + dateConversion.fieldName();
                     try {
                         DateFormat dateFormat = dateConversion.dateFormat();
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat.getDateFromat());
                         String dateDesc = simpleDateFormat.format(value);
-                        Field field = valueObjClass.getDeclaredField(fieldName.toString());
+                        Field field = valueObjClass.getDeclaredField(fieldNameDesc);
                         field.setAccessible(true);
                         field.set(valueObj, dateDesc);
                     } catch (NoSuchFieldException e) {
@@ -180,10 +180,10 @@ public class TransformerVoUtils {
                     } catch (InvocationTargetException e) {
                         e.printStackTrace();
                     }
-                    fieldName = fieldName + constantsConversion.fieldName();
+                    String fieldNameDesc = fieldName + constantsConversion.fieldName();
                     Field field = null;
                     try {
-                        field = valueObjClass.getDeclaredField(fieldName);
+                        field = valueObjClass.getDeclaredField(fieldNameDesc);
                     } catch (NoSuchFieldException e) {
                         e.printStackTrace();
                     }
