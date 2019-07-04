@@ -19,7 +19,7 @@ public class TransformerVoUtils {
     private TransformerVoUtils() {
     }
 
-    public static void transformerVo(Object valueObj) {
+    public static void transformerVoBySet(Object valueObj) {
         Class<?> valueObjClass = valueObj.getClass();
         Field[] declaredFields = valueObjClass.getDeclaredFields();
         for (Field declaredField : declaredFields) {
@@ -124,6 +124,74 @@ public class TransformerVoUtils {
                     } catch (InvocationTargetException e) {
                         e.printStackTrace();
                     }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static void transformerVoByField(Object valueObj) {
+        Class<?> valueObjClass = valueObj.getClass();
+        Field[] declaredFields = valueObjClass.getDeclaredFields();
+        for (Field declaredField : declaredFields) {
+            if (declaredField.isAnnotationPresent(DateConversion.class)) {
+                DateConversion dateConversion = declaredField.getAnnotation(DateConversion.class);
+                declaredField.setAccessible(true);
+                try {
+                    Object value = declaredField.get(valueObj);
+                    StringBuilder fieldName = new StringBuilder(declaredField.getName());
+                    fieldName = fieldName.append(dateConversion.fieldName());
+                    try {
+                        DateFormat dateFormat = dateConversion.dateFormat();
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat.getDateFromat());
+                        String dateDesc = simpleDateFormat.format(value);
+                        Field field = valueObjClass.getDeclaredField(fieldName.toString());
+                        field.setAccessible(true);
+                        field.set(valueObj, dateDesc);
+                    } catch (NoSuchFieldException e) {
+                        e.printStackTrace();
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            } else if (declaredField.isAnnotationPresent(ConstantsConversion.class)) {
+                ConstantsConversion constantsConversion = declaredField.getAnnotation(ConstantsConversion.class);
+                try {
+                    declaredField.setAccessible(true);
+                    String fieldName = declaredField.getName();
+                    Object value = declaredField.get(valueObj);
+                    if (!(value instanceof String)) {
+                        continue;
+                    }
+                    Class<?> enumClass = constantsConversion.enumClass();
+                    Method methodGetNameBykey = null;
+                    try {
+                        methodGetNameBykey = enumClass.getMethod(constantsConversion.methodName(), String.class);
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    }
+                    if (null == methodGetNameBykey) {
+                        continue;
+                    }
+                    Object valueName = null;
+                    try {
+                        valueName = methodGetNameBykey.invoke(valueObj, value);
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                    fieldName = fieldName + constantsConversion.fieldName();
+                    Field field = null;
+                    try {
+                        field = valueObjClass.getDeclaredField(fieldName);
+                    } catch (NoSuchFieldException e) {
+                        e.printStackTrace();
+                    }
+                    if (null == field) {
+                        continue;
+                    }
+                    field.setAccessible(true);
+                    field.set(valueObj, valueName);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }

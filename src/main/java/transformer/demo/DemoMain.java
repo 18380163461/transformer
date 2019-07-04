@@ -16,7 +16,7 @@ public class DemoMain {
         valueObj.setDateC(date);
         valueObj.setState("1");
         valueObj.setStateB("0");
-        TransformerVoUtils.transformerVo(valueObj);
+        TransformerVoUtils.transformerVoByField(valueObj);
         System.out.println(JSONObject.toJSON(valueObj));
     }
 }
